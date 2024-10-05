@@ -80,7 +80,7 @@ class EventController extends Controller
             "place" => $request->place,
             "event-date" => $request->event_date
         ]);
-        return redirect(route("event_create"))->with(["message" => "イベント情報が編集されました"]);
+        return redirect(route("event_edit",["id"=>$event->id]))->with(["message" => "イベント情報が編集されました"]);
     }
 
     /**
