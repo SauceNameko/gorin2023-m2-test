@@ -19,7 +19,7 @@
             @endforeach
         </select>
 
-        人材選択:<select name="worker_info" id="" multiple>
+        人材選択:<select name="worker_info[]" id="" multiple>
             @foreach ($workers as $worker)
                 <option value="{{ $worker->name }}">{{ $worker->name }}</option>
             @endforeach

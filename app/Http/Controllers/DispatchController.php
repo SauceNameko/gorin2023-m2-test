@@ -36,19 +36,34 @@ class DispatchController extends Controller
     public function store(Request $request)
     {
         //
-        $event = Event::where("name", $request->event_info)->first();
-        $worker = Worker::where("name", $request->worker_info)->first();
         $request->validate([
             "event_info" => "required",
             "worker_info" => "required",
             "memo" => "required",
         ]);
-        Dispatch::create([
-            "event-id" => $event->id,
-            "worker-id" => $worker->id,
-            "approval" => false,
-            "memo" => $request->memo
-        ]);
+        $workerIds = [];
+        $event = Event::where("name", $request->event_info)->first();
+        foreach ($request->worker_info as $worker_data) {
+            $worker = Worker::where("name", $worker_data)->first();
+            $workerIds[] = $worker->id;
+        }
+        $eventId = $event->id;
+
+        // ユニークチェック
+        foreach ($workerIds as $workerId) {
+            $existingDispatch = Dispatch::where('event-id', $eventId)->where('worker-id', $workerId)->first();
+            if ($existingDispatch) {
+                return redirect(route("dispatch_create"))->with(["message" => "既に登録されています"]);
+            }
+        }
+        foreach ($workerIds as $workerId) {
+            Dispatch::create([
+                "event-id" => $event->id,
+                "worker-id" => $worker->id,
+                "approval" => false,
+                "memo" => $request->memo
+            ]);
+        }
         return redirect(route("dispatch_create"))->with(["message" => "派遣情報が登録されました"]);
     }
 

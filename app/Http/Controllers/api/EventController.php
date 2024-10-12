@@ -17,7 +17,7 @@ class EventController extends Controller
         $place = $request->query("place");
         $title = $request->query("title");
         if (!$worker_id) {
-            return response()->json(["error" => "bad_request"], 400);
+            return response()->json(["error" => "not-found"], 404);
         }
         $dispatches = Dispatch::where("worker-id", $worker_id)->get();
         $events = [];
@@ -37,9 +37,16 @@ class EventController extends Controller
             if ($title) {
                 $query->where("name", 'like', '%' . $title . '%');
             }
-            $results[] = $query->find($event->id);
+            // if ($query != null) {
+            $resu = $query->find($event->id);
+            // }
+            if ($resu != null) {
+                $results[] = $resu;
+            }
         }
-
+        if (empty($results)) {
+            return response()->json(["error" => "not-found"], 404);
+        }
         return response()->json($results);
     }
     public function store(Request $request)
@@ -51,8 +58,8 @@ class EventController extends Controller
         $event_id = $request->event_id;
         $worker_id = $request->worker_id;
         $dispatches = Dispatch::where("event-id", $event_id)->where("worker-id", $worker_id)->get();
-        if($dispatches->isEmpty()){
-        return response()->json(["error"=>"bad_request"],400);
+        if ($dispatches->isEmpty()) {
+            return response()->json(["error" => "not-found"], 404);
         }
         foreach ($dispatches as $dispatch) {
             $dispatch->update([
